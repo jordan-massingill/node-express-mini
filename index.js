@@ -4,8 +4,17 @@ const server = express();
 
 const db = require('./data/db.js')
 
+function authenticate(req, res, next) {
+  if (req.body.password === 'myPassword') {
+    next()
+  }
+  else {
+    res.status(401).json("Incorrect Password").end()
+  }
+}
+
 // configure middleware
-server.use(express.json())
+server.use(express.json());
 
 // configure routing
 server.get('/', (req, res) => {
@@ -22,8 +31,11 @@ server.get('/users', (req, res) => {
   });
 });
 
-server.post('/users', async (req, res) => {
-  const user = req.body;
+server.post('/users', authenticate, async (req, res) => {
+  const user = {
+    "name": req.body.name,
+    "bio": req.body.bio
+  };
   if (user.name && user.bio) {
     try {
       const response = await db.insert(user);
